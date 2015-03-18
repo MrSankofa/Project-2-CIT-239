@@ -1,16 +1,235 @@
-*.class
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Scanner;
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
 
-# Package Files #
-*.jar
-*.war
-*.ear
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-public class CreditAccount
+@SuppressWarnings("serial")
+public class CreditAccount extends ArrayList<CreditAccount>
 {
-   private String accountNum; 
+	private String accountNum;
+	private double available;
+	private double maxLimit;
+	private String issuerSymbol;
+	private boolean accountValid;
+	private static boolean verboseMode = false;
+	private String[] issuer = new String[]{"AE", "V", "MC", "DIS", "DINE"};
+	private String[] issuerCode = new String[]{"3","4","5","6","7"}; //comment how the indiced correspond with the symbols above
+	private Date date;
+	
+	public CreditAccount()
+	{
+		
+	}
+	
+	/**This constructor creates a credit card account by taking
+	 * in the issuer's symbol and generating an appropriate credit
+	 * card number and setting the max limit.*/
+	public CreditAccount(String issuerSymbol)
+	{
+		
+		//this matches the given issuer symbol with 
+		for(int i = 0; i < this.getIssuer().length; i++)
+			if(issuerSymbol.equals(this.getIssuer()[i]))
+			{
+				//create an credit car account for the corresponding issuer
+				this.accountNum = issuerCode[i] + randomCCNum();
+				this.issuerSymbol = this.getIssuer()[i];
+				
+				if(i >= 2)
+					this.maxLimit = 500;
+				
+				if(i < 2)
+					this.maxLimit = 1000;		
+			}
+		
+		//this actually sets the available amount to the max limit. See setter
+		//for available
+		this.setAvailable(maxLimit);
+		date = new Date();
+		
+	}
+	
+	public CreditAccount(String accNum, String available, String maxLimit)
+	{
+		this.accountNum = accNum;
+		this.available = Double.parseDouble(available);
+		this.maxLimit = Double.parseDouble(maxLimit);
+	}
+	
+	public void helpMenu()
+	{
+		
+		System.out.println("\n\nThis program accepts the following inputs and performs the corresponding \nactions: ");
+		System.out.println("USAGE:\tcommand parameter(s)");
+		System.out.println("\tCOMMAND\t\tPARAMETER(S)");
+		System.out.println("\thelp\t\t\t\t\t\tOutput this help text.");
+		System.out.println("\tprint\t\t\t\t\t\tOutput the date from the text.");
+		System.out.println("\tcreate\t\tissuerSymbol\t\t\tCREATE new account.");
+		System.out.println("\tverify\t\tCredit Card# Credit/Debit\tVerify a purchase or credit");
+		System.out.println("\tq\t\t\t\t\t\texit the program.");
+		
+		System.out.println("\nThe command and issuerSymbol values are NOT case sensitive.");
+		System.out.println("The following credit cards are supported:\n");
+		
+		System.out.println("\t\tCARD\t\t\t\tSYMBOL");
+		System.out.println("\t\tAmerican Express\t\tAE");
+		System.out.println("\t\tVisa\t\t\t\tV");
+		System.out.println("\t\tMasterCard\t\t\tMC");
+		System.out.println("\t\tDiscover\t\t\tDIS");
+		System.out.println("\t\tDiners Club\t\t\tDINE\n");
+	}
+	
+	/**print any accounts*/
+	public void printAccounts()
+	{
+		System.out.println("The data in the text file is represented below:\n ");
+		
+		for(int i=0; i < this.size(); i++)
+			  System.out.println(this.get(i).toString());
+	}
+	
+	
+	/**Output CC information to text files
+	 * @throws FileNotFoundException */
+	public void outputToTextFiles() throws FileNotFoundException
+	{
+		PrintWriter output = new PrintWriter("C:/Test/Test.txt");
+		
+		for(int i=0; i < this.size(); i++)
+			  output.print(this.get(i).toString());
+			
+		
+	}
+	
+	public boolean isEmpty(File file) throws FileNotFoundException
+	{
+		try(
+		Scanner input = new Scanner(file);
+		)
+		{
+			boolean isEmpty = true;
+			if(file.length() == 0) {
+				return isEmpty = false;
+			}
+			else
+				return isEmpty;
+		}	
+	}
+	
+	/**Generates a random 15 digit string to be
+	 * concatenated to the issuerCode[i]. Each 
+	 * credit card issue has a different starting
+	 * String number.*/
+	public String randomCCNum()
+	{
+		String result = "";
+		
+		for(int i=0; i<15; i++){
+			int num = (int) (Math.random()*10);
+			String n = Integer.toString(num);
+			result += num;
+		}
+		
+		return result;
+	}
+	//Getters and Setters
+	
+	public Date getDate()
+	{
+		return this.date;
+	}
+	public String[] getIssuer() 
+	{
+		return issuer;
+	}
+
+	public void setIssuer(String[] issuerCodes) 
+	{
+		this.issuer = issuerCodes;
+	}
+	
+	public String getAccountNum() 
+	{
+		return accountNum;
+	}
+
+	public void setAccountNum(String accountNum) 
+	{
+		this.accountNum = accountNum;
+	}
+
+	public double getAvailable()
+	{
+		return this.available;
+	}
+
+	//Going to have issue with multiple purchases and returns
+	public void setAvailable(double available)
+	{
+		this.available = available;
+	}
+
+	public double getMaxLimit()
+	{
+		return maxLimit;
+	}
+
+	public void setMaxLimit(double maxLimit) 
+	{
+		this.maxLimit = maxLimit;
+	}
+
+	public String getIssuerSymbol() 
+	{
+		return issuerSymbol;
+	}
+
+	public void setIssuerSymbol(String issuerSymbol) 
+	{
+		this.issuerSymbol = issuerSymbol;
+	}
+
+	public boolean isAccountValid() 
+	{
+		return accountValid;
+	}
+
+	public void setAccountValid(boolean accountValid)
+	{
+		this.accountValid = accountValid;
+	}
+
+	public static boolean isVerboseMode() 
+	{
+		return verboseMode;
+	}
+
+	public static void setVerboseMode(boolean verboseMode) 
+	{
+		CreditAccount.verboseMode = verboseMode;
+	}
+
+	public String[] getIssuerCode() 
+	{
+		return issuerCode;
+	}
+
+	public void setIssuerCode(String[] issuerCode) 
+	{
+		this.issuerCode = issuerCode;
+	}
+	
+	public String toString()
+	{
+		return "Account number: " + this.accountNum 
+				+"| " + "Current Available: "
+				+ this.getAvailable() 
+				+ "| " + "Max Credit Limit: "
+				+ this.getMaxLimit();
+	}
+
+	
 }
