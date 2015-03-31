@@ -1,0 +1,263 @@
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+
+public class Credit 
+{
+
+    public static void main(String[] args) throws FileNotFoundException 
+    {
+
+        System.out.println("run:");
+
+        //this object is created just to access the CreditAccount fields
+        CreditAccount gen = new CreditAccount();
+
+        //this is used to actually create the accounts.
+        CreditAccount acct = new CreditAccount();
+
+        //The data from this program will be written out to the file below
+        File file = new File("C:/Test/Test1.txt");
+        Scanner read = new Scanner(file);
+
+        //The program should read the text file if there exist one.
+        //If there exists one it should create CCAccount objects with
+        //that information in it. 
+        while (read.hasNext()) 
+        {
+            String line = read.nextLine();
+
+            try 
+            {
+
+                /**
+                 * for some reason find the substring of the line creates a
+                 * string out of bounds exception. Even though the line has a
+                 * length of 87 each time. The program works fine even though
+                 * this bit of code throws an exception as well.
+                 */
+                String availableSub = line.substring(53);
+
+                //comment this part
+                int end = availableSub.indexOf("|"); //There was some weird stuff going on with split so I used index of
+                //end= "Account number: 4268707260797185| Current Available:"
+                int maxEnd = availableSub.indexOf(":");
+                String accNum = line.substring(16, 32);
+                String available = availableSub.substring(0, end);
+                String maxCreditLimit = availableSub.substring(maxEnd + 2);
+
+                acct.add(new CreditAccount(accNum, available, maxCreditLimit));
+
+            } catch (StringIndexOutOfBoundsException e) 
+            {
+            }
+        }
+
+        //Then we know have an objects for the following CCnumbers read from the file.
+        acct.printAccounts();
+
+        acct.helpMenu();
+
+        do 
+        {
+			//print the menu or for stub prompt the user to enter a command
+
+            //Then it prompts the user for a command.
+            System.out.print("\nCommand: ");
+
+            //take input commands.
+            Scanner input = new Scanner(System.in);
+
+            String[] command = input.nextLine().split(" ");
+
+            //if statements. If the input is valid just pass the second command index 
+            //command[1] to the creditAccount constructor
+            if (command[0].equals("create")) 
+            {
+
+                if (command.length < 2) 
+                {
+                    System.out.println("Incorrect data. See PARAMETERS in help menu");
+                } else {
+
+                    /**
+                     * *this i is outside the for loop to check for a match the
+                     * gen is used in this while loop just to check if the
+                     * issuer symbol matches the user input's symbol. Because
+                     * how the codes are stored in an array in the
+                     * creditAccount.java class. I stored the code in a var to
+                     * use it later (line 106).
+                     */
+                    int i = 0;
+                    int code = 0;
+                    while (i < gen.getIssuer().length) 
+                    {
+                        if (command[1].equalsIgnoreCase(gen.getIssuer()[i])) 
+                        {
+                            code = i;
+                            //create an credit card account for the corresponding issuer
+                            //command[1] is put to uppercase for error handling
+                            acct.add(new CreditAccount(command[1].toUpperCase()));
+                            break; //if there is a match break from the for loop
+                        }
+                        i++;
+                    }
+
+                    //the only way for i to get to 5 is if there isn't a match
+                    if (i == 5) 
+                    {
+                        System.out.println("Incorrect DATA. see help menu");
+                        continue;
+                    }
+
+                    //the int end is going to be used as an index to print the
+                    //the last account (newly added) out to the console.
+                    int end = acct.size() - 1;
+                    System.out.printf("New account created for credit card %s: "
+                            + "\taccount #=%s\ncredit limit=%4.2f\n",
+                            acct.get(end).getIssuer()[code],
+                            acct.get(end).getAccountNum(),
+                            acct.get(end).getMaxLimit());
+
+                    //this counts and outputs how many accounts we have.
+                    int r = 0;
+                    if (r < acct.size()) 
+                    {
+                        System.out.printf("%d record(s) read from file.", acct.size());
+
+                    }
+
+                }//end of else that gives the correct amount of input indices
+            } //end of "create" if
+            else if (command[0].equals("verify")) 
+            {
+
+                //verify takes three, verify accnum amount
+                //if we get anything less or greater then it's incorrect
+                if (command.length < 3 || command.length > 3) 
+                {
+                    System.out.println("Incorrect data. See PARAMETERS in help menu");
+                    acct.helpMenu();
+                } else 
+                {
+
+                    //find the account with the CCNum in command[1] with a made account.
+                    /**
+                     * I want to take the CCNum from the user input. read the
+                     * text file to see if there is a match. Then find the
+                     * object reference variable that points that object that
+                     * has the account number I found.
+                     */
+                    /**
+                     * Once I've found the object that has that CCNum I need to
+                     * change its available values and stuff. Program is to read
+                     * the text from the file and find a match if possible
+                     */
+                    int p = 0;
+                    while (p < acct.size()) 
+                    {
+                        if (command[1].equals(acct.get(p).getAccountNum())) 
+                        {
+
+                            //Error handling for wise guys who try to enter letters
+                            //instead of numbers for the amount :)
+                            try 
+                            {
+                                double request = Double.parseDouble(command[2]);
+
+                                //We have a match! Deduct that amount from the aviable amount						
+                                double result = acct.get(p).getAvailable() - request;
+
+                                //if your request is less than or equal to the 
+                                //amount available in the account you're OK!
+                                if (request <= acct.get(p).getAvailable()) 
+                                {
+                                    //change the amount in your account
+                                    acct.get(p).setAvailable(result);
+                                    System.out.printf("AUTHORIZATION GRANTED (accountNum=%s, "
+                                            + "transactionAmount=$%4.2f,\n available credit=$%4.2f)\n",
+                                            acct.get(p).getAccountNum(), Double.parseDouble(command[2]),
+                                            acct.get(p).getAvailable());
+
+                                } else //Otherwise you have insufficient funds
+                                {
+                                    System.out.println("Insufficient Funds :( ");
+                                }
+                            } catch (Exception e) 
+                            {
+
+                                System.out.println("Error: You entered incorrect values for a purchase "
+                                        + "or returns. The input must be a double");
+                                break;
+                            }
+
+                        }
+                        p++;
+                    }
+
+                    //duplicate code code use oop
+                    if (p == acct.size()) 
+                    {
+                        System.out.println("Incorrect data. See the help menu");
+                    } else 
+                    {
+                        int r = 0;
+                        if (r < acct.size()) 
+                        {
+                            System.out.printf("%d record(s) read from file.", acct.size());
+
+                        }
+                    }
+
+                }
+
+            } else if (command[0].equalsIgnoreCase("q")) //when to quit
+            {
+                break;
+            } else if (command[0].equalsIgnoreCase("print")) 
+            {
+                if (file.length() == 0) 
+                {
+                    System.out.println("File is empty");
+                } else 
+                {
+                    acct.printAccounts();
+                }
+            } else if (command[0].equalsIgnoreCase("help")) 
+            {
+                acct.helpMenu();
+            } else 
+            {
+                //if the user inputs anything that doesn't follow the above 
+                //commands it's incorrect
+                System.out.println("Incorrect DATA. see help menu");
+                //print the menu again
+                continue;
+            }
+
+            try
+            (
+                PrintWriter output = new PrintWriter("C:/Test/Test1.txt");
+            ) 
+            {
+                for (int i = 0; i < acct.size(); i++) 
+                {
+                    //output.println(acct.get(i).toString());
+                    output.printf("Account number: %s| Current Available: %.2f| "
+                            + "Max Credit Limit: %1.2f",
+                            acct.get(i).getAccountNum(), acct.get(i).getAvailable(),
+                            acct.get(i).getMaxLimit());
+                    output.println("\n");
+                }
+
+            }
+
+        } while (true);
+
+        System.out.println("\n\n\nExited...");
+
+    }
+
+}
